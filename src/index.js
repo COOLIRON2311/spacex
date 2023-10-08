@@ -38,7 +38,7 @@ function drawMap() {
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
     const projection = d3.geoMercator()
-    // .scale(70)
+        // .scale(70)
         .scale(100)
         // .center([0, 20])
         .center([-50, 0])
@@ -52,8 +52,8 @@ function drawMap() {
         .attr("d", d3.geoPath()
             .projection(projection)
         )
-        .attr("fill", function (d) {
-            return colorScale(0);
-        })
+        // .attr("fill", function (d) {
+        //     return colorScale(0);
+        // })
         .style("opacity", .7);
 }

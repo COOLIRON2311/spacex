@@ -9,7 +9,8 @@
 .content {
     flex-grow: 0.7;
 }
-#listContainer{
+
+#listContainer {
     height: 300px;
     overflow: hidden;
     overflow-y: scroll;
