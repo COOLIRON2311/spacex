@@ -14,7 +14,7 @@ function setup() {
                 return spaceX.launchpad(l.launchpad).then(lp => {
                     launchpads.set(lp.id,
                         {
-                            "id": lp.id,
+                            "id": `L${lp.id}`,
                             "type": "Feature",
                             "geometry": {
                                 "type": "Point",
@@ -31,14 +31,28 @@ function setup() {
     });
 }
 
+function highLightPoint(event) {
+    const s = d3.select(`#${event.target.getAttribute("lp")}`);
+    s.classed("norm_point", false);
+    s.classed("high_point", true);
+}
+
+function toneDownPoint(event) {
+    const s = d3.select(`#${event.target.getAttribute("lp")}`);
+    s.classed("high_point", false);
+    s.classed("norm_point", true);
+}
+
 function renderLaunches(launches, container) {
     const list = document.createElement("ul");
     list.className = "list-group";
     launches.forEach(launch => {
         const item = document.createElement("li");
-        item.setAttribute("lp", launch.launchpad);
+        item.setAttribute("lp", `L${launch.launchpad}`);
         item.className = "list-group-item";
         item.innerHTML = launch.name;
+        item.onmouseover = highLightPoint;
+        item.onmouseleave = toneDownPoint;
         list.appendChild(item);
     });
     container.replaceChildren(list);
