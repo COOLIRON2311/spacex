@@ -9,23 +9,23 @@ function setup() {
     spaceX.launches().then(data => {
         const listContainer = document.getElementById("listContainer");
         const launchpads = new Map();
-        const p = data.map(l => {
-            if (!launchpads.has(l.launchpad)) {
-                return spaceX.launchpad(l.launchpad).then(lp => {
-                    launchpads.set(lp.id,
-                        {
-                            "id": `L${lp.id}`,
-                            "type": "Feature",
-                            "geometry": {
-                                "type": "Point",
-                                "coordinates": [lp.longitude, lp.latitude]
-                            }
-                        });
-                });
-            }
+        const p = data.map(async l => {
+            const lp = await spaceX.launchpad(l.launchpad);
+            launchpads.set(lp.id,
+                {
+                    "id": `L${lp.id}`,
+                    "full_name": lp.full_name,
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lp.longitude, lp.latitude]
+                    }
+                }
+            );
         });
         Promise.all(p).then(() => {
             renderLaunches(data, listContainer);
+            // launchpads.forEach(x => console.log(x.full_name, x.geometry.coordinates));
             drawMap(launchpads);
         });
     });
