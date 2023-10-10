@@ -8,15 +8,35 @@ function setup() {
     const spaceX = new SpaceX();
     spaceX.launches().then(data => {
         const listContainer = document.getElementById("listContainer");
-        renderLaunches(data, listContainer);
-        drawMap();
+        const launchpads = new Map();
+        const p = data.map(l => {
+            if (!launchpads.has(l.launchpad)) {
+                return spaceX.launchpad(l.launchpad).then(lp => {
+                    launchpads.set(lp.id,
+                        {
+                            "id": lp.id,
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [lp.longitude, lp.latitude]
+                            }
+                        });
+                });
+            }
+        });
+        Promise.all(p).then(() => {
+            renderLaunches(data, listContainer);
+            drawMap(launchpads);
+        });
     });
 }
+
 function renderLaunches(launches, container) {
     const list = document.createElement("ul");
     list.className = "list-group";
     launches.forEach(launch => {
         const item = document.createElement("li");
+        item.setAttribute("lp", launch.launchpad);
         item.className = "list-group-item";
         item.innerHTML = launch.name;
         list.appendChild(item);
@@ -24,7 +44,12 @@ function renderLaunches(launches, container) {
     container.replaceChildren(list);
 }
 
-function drawMap() {
+/**
+ *
+ * @param {Map} data
+ */
+function drawMap(data) {
+    // console.log(data);
     // const width = 640;
     // const height = 480;
     const width = 800;
@@ -43,6 +68,8 @@ function drawMap() {
         // .center([0, 20])
         .center([-50, 0])
         .translate([width / 2 - margin.left, height / 2]);
+    const path = d3.geoPath()
+        .projection(projection);
     svg.append("g")
         .selectAll("path")
         .data(Geo.features)
@@ -56,4 +83,11 @@ function drawMap() {
         //     return colorScale(0);
         // })
         .style("opacity", .7);
+    svg.selectAll("point")
+        .data(data.values())
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("id", (v) => v.id)
+        .attr("class", "norm_point");
 }

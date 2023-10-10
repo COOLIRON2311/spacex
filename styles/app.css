@@ -16,3 +16,12 @@
     overflow-y: scroll;
     border: black 1px solid;
 }
+
+.norm_point {
+    fill: red;
+    opacity: 0.7;
+}
+
+.high_point {
+    fill: green;
+}
