@@ -25,3 +25,7 @@
 .high_point {
     fill: green;
 }
+
+.off_point {
+    opacity: 0;
+}

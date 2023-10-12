@@ -6,12 +6,13 @@ document.addEventListener("DOMContentLoaded", setup);
 
 function setup() {
     const spaceX = new SpaceX();
-    spaceX.launches().then(data => {
-        const listContainer = document.getElementById("listContainer");
-        const launchpads = new Map();
-        const p = data.map(async l => {
-            const lp = await spaceX.launchpad(l.launchpad);
-            launchpads.set(lp.id,
+    const listContainer = document.getElementById("listContainer");
+    spaceX.launchpads().then(data => {
+        const lp_map = new Map();
+        const launchpads = [];
+        data.forEach(lp => {
+            lp_map[`L${lp.id}`] = 0;
+            launchpads.push(
                 {
                     "id": `L${lp.id}`,
                     "full_name": lp.full_name,
@@ -23,24 +24,33 @@ function setup() {
                 }
             );
         });
-        Promise.all(p).then(() => {
+        return { lp_map: lp_map, launchpads: launchpads };
+    }).then(r => {
+        spaceX.launches().then(data => {
+            data.forEach(l => {
+                r.lp_map[`L${l.launchpad}`]++;
+            });
             renderLaunches(data, listContainer);
-            // launchpads.forEach(x => console.log(x.full_name, x.geometry.coordinates));
-            drawMap(launchpads);
+            drawMap(r.launchpads.filter(l => r.lp_map[l.id] > 0));
         });
     });
 }
 
 function highLightPoint(event) {
-    const s = d3.select(`#${event.target.getAttribute("lp")}`);
-    s.classed("norm_point", false);
-    s.classed("high_point", true);
+    const s1 = d3.selectAll(".norm_point");
+    const s2 = d3.select(`#${event.target.getAttribute("lp")}`);
+    s1.classed("off_point", true); // turn off all points
+    s2.classed("off_point", false); // turn on target point
+    s2.classed("norm_point", false); // disable normal state for target point
+    s2.classed("high_point", true); // enable highlight state for target point
 }
 
 function toneDownPoint(event) {
-    const s = d3.select(`#${event.target.getAttribute("lp")}`);
-    s.classed("high_point", false);
-    s.classed("norm_point", true);
+    const s1 = d3.selectAll(".norm_point");
+    const s2 = d3.select(`#${event.target.getAttribute("lp")}`);
+    s1.classed("off_point", false); // turn on all points
+    s2.classed("high_point", false); // disable highlight state for target point
+    s2.classed("norm_point", true); // enable normal state for target point
 }
 
 function renderLaunches(launches, container) {
@@ -60,7 +70,7 @@ function renderLaunches(launches, container) {
 
 /**
  *
- * @param {Map} data
+ * @param {Array} data
  */
 function drawMap(data) {
     // console.log(data);
@@ -98,7 +108,7 @@ function drawMap(data) {
         // })
         .style("opacity", .7);
     svg.selectAll("point")
-        .data(data.values())
+        .data(data)
         .enter()
         .append("path")
         .attr("d", path)
