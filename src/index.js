@@ -11,7 +11,7 @@ function setup() {
         const lp_map = new Map();
         const launchpads = [];
         data.forEach(lp => {
-            lp_map[`L${lp.id}`] = 0;
+            lp_map.set(`L${lp.id}`, { hits: 0 });
             launchpads.push(
                 {
                     "id": `L${lp.id}`,
@@ -28,10 +28,10 @@ function setup() {
     }).then(r => {
         spaceX.launches().then(data => {
             data.forEach(l => {
-                r.lp_map[`L${l.launchpad}`]++;
+                r.lp_map.get(`L${l.launchpad}`).hits++;
             });
             renderLaunches(data, listContainer);
-            drawMap(r.launchpads.filter(l => r.lp_map[l.id] > 0));
+            drawMap(r.launchpads.filter(l => r.lp_map.get(l.id).hits > 0));
         });
     });
 }
